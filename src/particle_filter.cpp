@@ -41,19 +41,14 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   std::normal_distribution<double> dist_theta(theta, std_theta);
 
   for (int i = 0; i < num_particles; ++i) {
-    // double particle_x, particle_y, particle_theta;
     Particle new_particle = Particle();
 
     new_particle.x = dist_x(gen);
     new_particle.y = dist_y(gen);
     new_particle.theta = dist_theta(gen);
     new_particle.weight = 1.0; 
-    // particle_x = dist_x(gen);
-    // particle_y = dist_y(gen);
-    // particle_theta = dist_theta(gen);
-    
-    // particles.push_back();
-    // weights.push_back(1.0);
+
+    particles.push_back(new_particle);
   }
   is_initialized = true;
 }
@@ -67,7 +62,20 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
    *  http://www.cplusplus.com/reference/random/default_random_engine/
    */
+  for (int i = 0; i < particles.size(); ++i) {
+    Particle current_particle = particles[i];
+    double current_x = particles[i].x;
+    double current_y = particles[i].y;
+    double current_heading = particles[i].theta;
+    
+    double predicted_x = current_x + ((velocity/yaw_rate) * (sin(current_heading + (yaw_rate * delta_t))- sin(current_heading)));
+    double predicted_y = current_y + ((velocity/yaw_rate) * (cos(current_heading) - cos(current_heading + (yaw_rate * delta_t))));
+    double predicted_heading = current_heading + (yaw_rate * delta_t);
 
+    particles[i].x = predicted_x;
+    particles[i].y = predicted_y;
+    particles[i].theta = predicted_heading;
+  }
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
